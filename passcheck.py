@@ -12,9 +12,9 @@ def get_logins_list():
     result = []
     # root = tk.Tk()
     # root.withdraw()
-    filetypes = (('Text, Excel files', '*.txt *.xlsx'),
+    filetypes = (('Text, Excel files', '*.txt *.xlsx *.xlsm'),
                  ('Text files', '*.txt'),
-                 ('Excel files', '*.xlsx'),
+                 ('Excel files', '*.xlsx *.xlsm'),
                  ('All files', '*.*')
     )
     file_path = filedialog.askopenfilename(initialdir = os.path.expanduser("~/Desktop"),
@@ -26,17 +26,20 @@ def get_logins_list():
     if ext == '.txt':
         with open(file_path, 'r') as f:
             logins = f.readlines()
-            for line in logins:
-                result.append(line.strip())
+            for login in logins:
+                if login:
+                    result.append(login.strip())
             result = list(filter(None, result))
             return result
-    elif ext == '.xlsx':
+    elif ext == '.xlsx' or ext == '.xlsm':
         wb = load_workbook(filename = file_path)
         sheet = wb['ВИП']
         col = sheet['E']
         for i in range(1, len(col)):
-            result.append(col[i].value)
-        result = list(filter(None, result))
+            if col[i].value:
+                login = str(col[i].value)
+                login = login.strip()
+                result.append(login)
         return result
     else:
         sys.exit()
