@@ -1,17 +1,14 @@
 import os, sys
 from datetime import datetime
 from subprocess import check_output, STDOUT
-from alive_progress import alive_bar
-import tkinter as tk
 from tkinter import filedialog
-from openpyxl import load_workbook
 
+from openpyxl import load_workbook
+from alive_progress import alive_bar
 
 
 def get_logins_list():
     result = []
-    # root = tk.Tk()
-    # root.withdraw()
     filetypes = (('Text, Excel files', '*.txt *.xlsx *.xlsm'),
                  ('Text files', '*.txt'),
                  ('Excel files', '*.xlsx *.xlsm'),
@@ -33,8 +30,12 @@ def get_logins_list():
             return result
     elif ext == '.xlsx' or ext == '.xlsm':
         wb = load_workbook(filename = file_path)
-        sheet = wb['ВИП']
-        col = sheet['E']
+        try:
+            sheet = wb['ВИП']
+            col = sheet['E']
+        except:
+            print("Не удалость найти спиcок логинов в файле Excel")
+            return result
         for i in range(1, len(col)):
             if col[i].value:
                 login = str(col[i].value)
@@ -68,7 +69,7 @@ def main():
         for login in logins:
             if not login:
                 bar()
-                continue           
+                continue
             bar.text(login)
             dates = get_passdate(login)
             if not dates:
@@ -78,11 +79,11 @@ def main():
             if dates[2] == "Никогда":
                 bar()
                 continue
-            date_pass_set = datetime.strptime(dates[1], '%d.%m.%Y %H:%M:%S')
+            # date_pass_set = datetime.strptime(dates[1], '%d.%m.%Y %H:%M:%S')
             date_pass_exp = datetime.strptime(dates[2], '%d.%m.%Y %H:%M:%S')
             now = datetime.today()
             days_left = date_pass_exp - now
-            if days_left.days < 5 and days_left.days >0 :
+            if days_left.days < 5 and days_left.days > 0:
                 print(f'{dates[0]:40} - {days_left.days} дн. до просрочки')
             elif days_left.days < 0:
                 print(f'{dates[0]:40} - пароль просрочен на {-days_left.days} дн.')
